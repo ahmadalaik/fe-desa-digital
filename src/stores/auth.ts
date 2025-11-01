@@ -26,16 +26,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     const token: string = data.token;
     const permissions: Permissions = data.permissions || {};
 
-    set({ user, token, permissions });
-
     Cookies.set("user", JSON.stringify(user));
     Cookies.set("token", token);
     Cookies.set("permissions", JSON.stringify(permissions));
+
+    set({ user, token, permissions });
   },
 
   logout: () => {
     set({ user: null, token: "", permissions: {} });
-    
+
     Cookies.remove("user");
     Cookies.remove("token");
     Cookies.remove("permissions");
