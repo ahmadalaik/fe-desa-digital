@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router";
 import { useAuthStore } from "../stores/auth";
 import Login from "../views/auth/login";
+import Dashboard from "../views/admin/dashboard";
 
 export default function AppRoutes() {
   const isAuthenticated = useAuthStore((state) => state.token !== "");
@@ -15,6 +16,13 @@ export default function AppRoutes() {
           ) : (
             <Login />
           )
+        }
+      />
+
+      <Route
+        path="/admin/dashboard"
+        element={
+          isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />
         }
       />
     </Routes>
