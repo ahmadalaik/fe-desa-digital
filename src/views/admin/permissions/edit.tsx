@@ -1,0 +1,124 @@
+import { useEffect, useState, type FC, type FormEvent } from "react";
+import { useNavigate, useParams } from "react-router";
+import { usePermissionByID } from "../../../hooks/admin/permission/usePermissionByID";
+import { usePermissionUpdate } from "../../../hooks/admin/permission/usePermissionUpdate";
+import AdminLayout from "../../../layouts/admin";
+import { FiArrowLeft, FiSave } from "react-icons/fi";
+import toast from "react-hot-toast";
+
+interface ValidationErrors {
+  [key: string]: string;
+}
+
+const PermissionEdit: FC = () => {
+  document.title = "Edit Permission - Desa Konohagakure";
+
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  const [name, setName] = useState<string>("");
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
+  const { data: permission } = usePermissionByID(Number(id));
+
+  useEffect(() => {
+    if (permission) {
+      setName(permission.name);
+    }
+  }, [permission]);
+
+  const { mutate, isPending } = usePermissionUpdate();
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    
+    mutate(
+      {
+        id: Number(id),
+        name,
+      },
+      {
+        onSuccess: () => {
+          navigate("/admin/permissions");
+
+          toast.success("Permission updated successfully!", {
+            position: "top-right",
+            duration: 3000,
+          });
+        },
+        onError: (error: any) => {
+          setErrors(error.response?.data?.errors || {});
+        },
+      }
+    );
+  };
+
+  return (
+    <AdminLayout>
+      <div className="p-5">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Edit Permission
+            </h1>
+            <p className="text-sm text-gray-500 mt-1 italic">
+              Form untuk mengubah permission.
+            </p>
+          </div>
+        </div>
+
+        {/* Form edit */}
+        <div className="bg-white rounded-xl shadow">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Permission Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter permission name"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              />
+            </div>
+
+            {/* Menampilkan pesan error validasi */}
+            {errors.Name && (
+              <div
+                className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 mt-2 rounded-xl relative"
+                role="alert"
+              >
+                <span className="block sm:inline">{errors.Name}</span>
+              </div>
+            )}
+
+            {/* Tombol aksi */}
+            <div className="flex justify-start">
+              <button
+                type="button"
+                className="px-4 py-2 flex items-center bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors duration-200 mr-2"
+                onClick={() => window.history.back()}
+              >
+                <FiArrowLeft className="mr-2" size={18} />
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={isPending}
+                className="px-4 py-2 flex items-center bg-linear-to-br from-yellow-800 to-yellow-400 text-white rounded-xl hover:bg-yellow-700 transition-colors duration-200"
+              >
+                <FiSave className="mr-2" size={18} />
+                {isPending ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default PermissionEdit;
